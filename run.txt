@@ -1,0 +1,9 @@
+docker compose down
+docker rm -f codespaces-postgres
+docker compose up -d
+
+psql -h localhost -U postgres -d app_db
+
+pw:
+postgres
+git checkout -b web-setup
