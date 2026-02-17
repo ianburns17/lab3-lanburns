@@ -2,8 +2,60 @@ docker compose down
 docker rm -f codespaces-postgres
 docker compose up -d
 
-psql -h localhost -U postgres -d app_db
+psql -h localhost -U postgres -d rentals
 
 pw:
 postgres
 git checkout -b web-setup
+
+db rentals
+\c rentals
+CREATE ROLE users WITH LOGIN PASSWORD 'tapirhorse';
+
+psql --host=localhost --dbname=rentals --username=users
+
+ALTER DATABASE feedback OWNER TO users;
+
+ALTER SCHEMA public OWNER to users;
+
+db feedback
+
+\c feedback
+CREATE ROLE feedback WITH LOGIN PASSWORD 'tapirhorse';
+
+psql --host=localhost --dbname=feedback --username=feedback
+
+  migrate create -seq -ext=.sql -dir=./migrations create_feedback_table
+
+migrate -path=./migrations \
+  -database="postgres://users:tapirhorse@localhost/rentals?sslmode=disable" \
+  up
+migrate -database "postgres://users:tapirhorse@localhost/rentals?sslmode=disable" -path ./migrations force 2
+
+migrate -database "postgres://users:tapirhorse@localhost/rentals?sslmode=disable" -path ./migrations version
+migrate -database "postgres://users:tapirhorse@localhost/rentals?sslmode=disable" -path ./migrations down
+migrate create -seq -ext=.sql -dir=./migrations cars_table
+
+
+  migrate create -seq -ext=.sql -dir=./migrations users_table
+
+
+\lab 2
+
+psql --host=localhost --dbname=lab2_ianburns --username=lab2_user
+
+CREATE DATABASE lab2_ianburns;
+
+-- 2) Create dedicated user + password
+CREATE USER lab2_user WITH PASSWORD 'lab2pass';
+
+ALTER DATABASE lab2_ianburns OWNER TO lab2_user;
+
+-- 4) Grant all privileges on the public schema to lab2_user
+GRANT ALL ON SCHEMA public TO lab2_user;
+
+migrate -database "postgres://lab2_user:lab2pass@localhost/lab2_ianburns?sslmode=disable" -path ./migrations down
+
+# Test static car endpoints for craboo
+curl -i -X POST http://localhost:4000/v1/cars/read -d '{"make":"Toyota","model":"Camry","year":2020}' -H "Content-Type: application/json"
+curl -i http://localhost:4000/v1/cars/write

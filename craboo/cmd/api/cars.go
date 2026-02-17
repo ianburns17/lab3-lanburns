@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 )
 
@@ -22,7 +21,7 @@ func (a *applicationDependencies) readCarsHandler(w http.ResponseWriter, r *http
 	}
 
 	// for now display the result
-	fmt.Fprintf(w, "%+v\n", incomingData)
+	a.writeJSON(w, http.StatusOK, envelope{"car": incomingData}, nil)
 }
 
 // Handler for GET /v1/cars/write
@@ -33,5 +32,5 @@ func (a *applicationDependencies) writeCarsHandler(w http.ResponseWriter, r *htt
 		{"make": "Ford", "model": "Mustang", "year": 2021},
 	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(cars)
+	a.writeJSON(w, http.StatusOK, envelope{"cars": cars}, nil)
 }
