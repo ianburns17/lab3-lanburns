@@ -35,8 +35,9 @@ func main() {
 		config: settings,
 		logger: logger,
 	}
-	router := http.NewServeMux()
-	router.HandleFunc("/v1/healthcheck", appInstance.healthcheckHandler)
+
+	// Use the routes() function from routes.go
+	router := appInstance.routes()
 
 	apiServer := &http.Server{
 		Addr:         fmt.Sprintf(":%d", settings.port),
